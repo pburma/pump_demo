@@ -1,0 +1,46 @@
+<html>
+<head>
+</head>
+<body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="/pump.js"></script>
+<input id="button" type="button" /> Click Me
+<script>
+
+//Change the var name value to the name of an actual type field in your project
+//Change property" in item.property at line 29 to a specific field in the type you want to display
+var name = "pumps";
+
+var obj ={};
+obj.resource = name;
+obj.where = {"pumpId":"pump1"};
+ $("#button").on("click",function(){
+	console.log("Running Select Query");
+		$.ajax({
+		type : 'POST',
+    //url is the location where your node server is running, default is shown
+		url: 'http://127.0.0.1:8080/select',
+		data: JSON.stringify(obj),
+		contentType: "application/json; charset=utf-8",
+		dataType: "json",
+		success : function(data)
+		{
+			console.log(JSON.stringify(data));
+			var json = data;
+			$(json).each(function(index, item) {
+				$("body").append("<p>" + item.temp + "</p>");
+    });
+		},
+		error : function(xhr, status, error) {
+			console.log(JSON.stringify(error));
+		}
+	});
+});
+
+</script>
+<br>
+<br>
+<div id="chart_div" style="width: 400px; height: 120px;"></div>
+</body>
+</html>
