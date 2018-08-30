@@ -3,19 +3,58 @@ google.charts.setOnLoadCallback(drawTable);
 
 function drawTable() {
   var data = new google.visualization.DataTable();
-  data.addColumn("string", "Name");
-  data.addColumn("number", "Salary");
-  data.addColumn("boolean", "Full Time Employee");
-  data.addRows([
-    ["Mike", { v: 10000, f: "$10,000" }, true],
-    ["Jim", { v: 8000, f: "$8,000" }, false],
-    ["Alice", { v: 12500, f: "$12,500" }, true],
-    ["Bob", { v: 7000, f: "$7,000" }, true]
-  ]);
+  data.addColumn("string", "PumpID");
+  data.addColumn("number", "RPMs");
+  data.addColumn("number", "Temp");
 
-  var table = new google.visualization.Table(
-    document.getElementById("table_div")
-  );
+  var rows = [];
+  var obj ={};
+  obj.resource = "pumps";
 
-  table.draw(data, { showRowNumber: true, width: "100%", height: "100%" });
+  var options = {
+    alternatingRowStyle:true,
+    page:"enable",
+    pageSize: 15,
+    pagingButtons:"auto",
+    height: "50%",
+    width: "100%",
+    sortColumn: 0
+  }
+
+
+  $.ajax({
+    type : 'POST',
+    //url is the location where your node server is running, default is shown
+    url: 'http://127.0.0.1:8080/select',
+    data: JSON.stringify(obj),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success : function(val)
+    {
+      console.log(JSON.stringify(val));
+      $(val).each(function(index, item) {
+      var newrow = [item.pumpId, item.rpms, item.temp];
+      rows.push(newrow);
+    });
+      data.addRows(rows);
+      console.log("Rows: " + JSON.stringify(rows));
+      var table = new google.visualization.Table(
+        document.getElementById("table_div")
+      );
+      table.draw(data, options);
+      google.visualization.events.addListener(table, 'select', function() {
+        var index = table.getSelection();
+        var sid = data.getValue(index[0].row, 0);
+        var stemp = data.getValue(index[0].row, 1);
+        var srpms = data.getValue(index[0].row, 2);
+        alert("Click detected on row: " + sid + " " + stemp + " " + srpms);
+
+      });
+
+
+    },
+    error : function(xhr, status, error) {
+      console.log(JSON.stringify(error));
+    }
+  });
 }
